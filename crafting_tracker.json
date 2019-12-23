@@ -1,0 +1,1 @@
+{"tracker": [{"name": "redstone", "base": true}, {"name": "redstone_block", "base": false, "ingredients": [{"name": "redstone", "count": 9}]}, {"name": "cobble", "base": true}, {"name": "stone", "base": false, "ingredients": [{"name": "cobble", "count": "1"}]}]}
