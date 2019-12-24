@@ -69,19 +69,27 @@ def ingredient_counter(ingredients, converted_tracker):
             return "The recipe for " + item_name + " is incomplete"
         item = converted_tracker.get(item_name)
 
+        yields = 1
         #base case, no nested ungredients
         if item.get("base"):
             counted_ingredients[item_name] = item_count
         else:
-
+            yields = item.get("yields")
             #recursive step
             subcount = ingredient_counter(item.get("ingredients"), converted_tracker)
+            print(item)
+            print(yields)
+            print(subcount)
             for subitem in subcount.keys():
+                print(subitem)
+                crafts_needed = ceildiv(int(item_count), int(yields))
+                print(crafts_needed)
+
                 #adds to current count
                 if subitem in counted_ingredients:
-                    counted_ingredients[subitem] = counted_ingredients.get(subitem) + (item_count * subcount.get(subitem))
+                    counted_ingredients[subitem] = counted_ingredients.get(subitem) + (crafts_needed * int(subcount.get(subitem)))
                 else:
-                    counted_ingredients[subitem] = item_count * subcount.get(subitem)
+                    counted_ingredients[subitem] = crafts_needed * int(subcount.get(subitem))
 
     return counted_ingredients
 
@@ -110,14 +118,18 @@ def recipe_searcher():
             print("That item is not in the tracker")
 
     count = int(input("How many would you like to craft?\n"))
+    yields = 1
 
     if converted_tracker.get(item).get("base"):
         print(item + ": " + str(count))
         exit()
+    else:
+        yields = converted_tracker.get(item).get("yields")
+        count = ceildiv(count, int(yields))
 
     ingredient_list = ingredient_counter(converted_tracker.get(item).get("ingredients"), converted_tracker)
     for ingredient in ingredient_list.keys():
-        print(ingredient + ": " + str(count * ingredient_list.get(ingredient)))
+        print(ingredient + ": " + str(int(count * int(ingredient_list.get(ingredient)))))
 
     exit(0)
 
