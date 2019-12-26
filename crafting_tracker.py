@@ -102,14 +102,16 @@ def recipe_searcher():
     item = ""
     craft_list = []
     while item != "0":
-        item = input("Input an item you would like to craft, or 0 to exit\n")
+        item = input("Input an item you would like to craft, or 0 to see total cost\n")
         item.lower()
         if item != "0":
-            count = int(input("How many would you like to craft?\n"))
-            if item in converted_tracker:
-                craft_list.append((converted_tracker.get(item), count))
             if item not in converted_tracker:
                 print("That item is not in the tracker")
+            else:
+                count = int(input("How many would you like to craft?\n"))
+                if item in converted_tracker:
+                    craft_list.append((converted_tracker.get(item), count))
+
 
     base_ingredients = {}
     for item in craft_list:
