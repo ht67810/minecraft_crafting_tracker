@@ -35,7 +35,7 @@ def item_adder():
 
         while ingredient != "0":
             ingredient = input("Input an ingredient, or 0 if there are no more\n")
-            ingredient = ingredient.lower()
+            ingredient.lower()
             if ingredient != "0":
                 count = input("How many are there of that ingredient?\n")
                 ingredients.append((ingredient, count))
@@ -60,39 +60,32 @@ def item_adder():
         tracker = tracker.get("tracker")
 
 
-def ingredient_counter(ingredients, converted_tracker):
+def ingredient_counter(item, count, converted_tracker):
+    if item.get("base"):
+        return {item.get("name"): count}
+
+    count = ceildiv(count, int(item.get("yields")))
+
     counted_ingredients = {}
-    for item in ingredients:
-        item_name = item.get("name")
-        item_count = item.get("count")
+
+    for ingredient in item.get("ingredients"):
+        item_name = ingredient.get("name")
+        item_count = int(ingredient.get("count"))
         if item_name not in converted_tracker:
-            return "The recipe for " + item_name + " is incomplete"
-        item = converted_tracker.get(item_name)
+            print("Recipe for " + ingredient.get("name") + " not found")
+            exit()
+        counted_ingredients[item_name] = item_count * count
 
-        yields = 1
-        #base case, no nested ungredients
-        if item.get("base"):
-            counted_ingredients[item_name] = item_count
-        else:
-            yields = item.get("yields")
-            #recursive step
-            subcount = ingredient_counter(item.get("ingredients"), converted_tracker)
-            print(item)
-            print(yields)
-            print(subcount)
-            for subitem in subcount.keys():
-                print(subitem)
-                crafts_needed = ceildiv(int(item_count), int(yields))
-                print(crafts_needed)
+    base_ingredients = {}
+    for ingredient in counted_ingredients.keys():
+        subcount = ingredient_counter(converted_tracker.get(ingredient), int(counted_ingredients.get(ingredient)), converted_tracker)
+        for base in subcount.keys():
+            if base in base_ingredients:
+                base_ingredients[base] = base_ingredients.get(base) + subcount.get(base)
+            else:
+                base_ingredients[base] = subcount.get(base)
 
-                #adds to current count
-                if subitem in counted_ingredients:
-                    counted_ingredients[subitem] = counted_ingredients.get(subitem) + (crafts_needed * int(subcount.get(subitem)))
-                else:
-                    counted_ingredients[subitem] = crafts_needed * int(subcount.get(subitem))
-
-    return counted_ingredients
-
+    return base_ingredients
 
 def recipe_searcher():
     # Loads the json object from the file
@@ -106,33 +99,31 @@ def recipe_searcher():
     for item in tracker:
         converted_tracker[item.get("name")] = item
 
-    accepted = False
-    while not accepted:
+    item = ""
+    craft_list = []
+    while item != "0":
         item = input("Input an item you would like to craft, or 0 to exit\n")
         item.lower()
-        if item == 0:
-            exit()
-        if item in converted_tracker:
-            accepted = True
-        if item not in converted_tracker:
-            print("That item is not in the tracker")
+        if item != "0":
+            count = int(input("How many would you like to craft?\n"))
+            if item in converted_tracker:
+                craft_list.append((converted_tracker.get(item), count))
+            if item not in converted_tracker:
+                print("That item is not in the tracker")
 
-    count = int(input("How many would you like to craft?\n"))
-    yields = 1
+    base_ingredients = {}
+    for item in craft_list:
+        ingredient_list = ingredient_counter(item[0], item[1], converted_tracker)
+        for ingredient in ingredient_list.keys():
+            if ingredient in base_ingredients:
+                base_ingredients[ingredient] = base_ingredients.get(ingredient) + ingredient_list.get(ingredient)
+            else:
+                base_ingredients[ingredient] = ingredient_list.get(ingredient)
 
-    if converted_tracker.get(item).get("base"):
-        print(item + ": " + str(count))
-        exit()
-    else:
-        yields = converted_tracker.get(item).get("yields")
-        count = ceildiv(count, int(yields))
-
-    ingredient_list = ingredient_counter(converted_tracker.get(item).get("ingredients"), converted_tracker)
-    for ingredient in ingredient_list.keys():
-        print(ingredient + ": " + str(int(count * int(ingredient_list.get(ingredient)))))
+    for ingredient in base_ingredients.keys():
+        print(ingredient + ": " + str(base_ingredients.get(ingredient)))
 
     exit(0)
-
 
 
 if __name__ == "__main__":
